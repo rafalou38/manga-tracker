@@ -103,7 +103,7 @@ while True:
     for i, url in enumerate(projects):
         print(i + 1, "/", len(projects), end=" ", flush=True)
         fetchProject(url)
-        sleep(60 * random.random() * 2 + 0.5)
+        sleep(60 * random.random() * 5 + 1)
 
     break
 
