@@ -16,9 +16,9 @@ import re
 from naver import fetchNaverProject
 from kakao import fetchKakaoProject
 from kuaikanmanhua import fetchKuaikanmanhuaProject
+from ridibooks import fetchRidibooksProject
 
 db = TinyDB("db.json")
-
 
 DOMAIN_REGEX = r"(https?:\/\/[\w.]*?)(\w+)(\.\w+\/)"
 
@@ -35,6 +35,10 @@ domains = {
     "kuaikanmanhua": [
         fetchKuaikanmanhuaProject,
         "https://static3w.kuaikanmanhua.com/_nuxt/static-kkfront-pc/image/logo.f38006f.png",
+    ],
+    "ridibooks": [
+        fetchRidibooksProject,
+        "https://static.ridicdn.net/books-backend/p/8cd996/books/dist/favicon/favicon-256x256.png",
     ],
 }
 
@@ -103,7 +107,7 @@ while True:
     for i, url in enumerate(projects):
         print(i + 1, "/", len(projects), end=" ", flush=True)
         fetchProject(url)
-        sleep(60 * random.random() * 5 + 1)
+        sleep(60 * random.random() * 7 + 2)
 
     break
 
