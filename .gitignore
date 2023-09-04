@@ -2,3 +2,4 @@ __pycache__/
 sheet.csv
 db.json
 .env
+*.pkl

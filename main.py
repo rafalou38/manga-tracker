@@ -16,9 +16,7 @@ import re
 from naver import fetchNaverProject
 from kakao import fetchKakaoProject
 from kuaikanmanhua import fetchKuaikanmanhuaProject
-
-db = TinyDB("db.json")
-
+import new
 
 DOMAIN_REGEX = r"(https?:\/\/[\w.]*?)(\w+)(\.\w+\/)"
 
@@ -95,16 +93,18 @@ def fetchProject(url):
     db.upsert(doc, Query()["manga-id"] == id)
 
 
-projects = []
-while True:
-    # Attendre entre 5m et 1h
-    projects = reloadProjects()
+if __name__ == "__main__":
+    db = TinyDB("db.json")
+    projects = []
+    while True:
+        new.checkWhatsNew()
 
-    for i, url in enumerate(projects):
-        print(i + 1, "/", len(projects), end=" ", flush=True)
-        fetchProject(url)
-        sleep(60 * random.random() * 5 + 1)
+        projects = reloadProjects()
+        for i, url in enumerate(projects):
+            print(i + 1, "/", len(projects), end=" ", flush=True)
+            fetchProject(url)
+            sleep(60 * random.random() * 5 + 1)
 
-    break
+        break
 
 # print(fetchKuaikanmanhuaProject("https://www.kuaikanmanhua.com/web/topic/11045/"))
