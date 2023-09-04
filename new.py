@@ -1,3 +1,10 @@
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+WEBHOOK_URL = os.getenv("WEBHOOK_NEW_URL")
+assert WEBHOOK_URL
+
 import requests
 from bs4 import BeautifulSoup
 from time import sleep
@@ -21,7 +28,6 @@ headers = {
 KKM = "https://www.kuaikanmanhua.com/tag/0?region=1&pays=0&state=0&sort=3&page=1"
 NAVER = "https://comic.naver.com/api/webtoon/titlelist/new?order=update"
 NAVER_COMICS = "https://series.naver.com/comic/recentList.series"
-WEBHOOK_URL = "https://discord.com/api/webhooks/1148230833413554216/5xcZMZHyAt_8ZByComoTq5HMuk5fTBgcmmZ9IvGGeslHfWgiTqLJ3qXlzTah9jblctU0"
 
 
 try:
