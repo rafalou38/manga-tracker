@@ -64,11 +64,12 @@ def publish(domain, id, url, title, img):
                 ],
             },
         )
-        if r.status_code != 200:
+        if not r.ok:
             sleep(40)
             return
 
         mangasIds.add(globalId)
+        sleep(2)
 
 
 def newNaverComic():
