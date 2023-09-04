@@ -3,6 +3,7 @@ THis is a simple python script that fetches a list of manga urls from a google s
 -  kakao
 -  nave
 -  kuaikanmanhua
+-  ridibooks
 
 It check for new chapters for every once in a while on each of them.
 The new chapter are directly pushed to a discord webhook.
