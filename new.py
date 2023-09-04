@@ -26,8 +26,8 @@ headers = {
     # "TE": "trailers",
 }
 KKM = "https://www.kuaikanmanhua.com/tag/0?region=1&pays=0&state=0&sort=3&page=1"
-NAVER = "https://comic.naver.com/api/webtoon/titlelist/new?order=update"
-NAVER_COMICS = "https://series.naver.com/comic/recentList.series"
+NAVER_COMIC = "https://comic.naver.com/api/webtoon/titlelist/new?order=update"
+NAVER = "https://series.naver.com/comic/recentList.series"
 
 
 try:
@@ -69,11 +69,10 @@ def publish(domain, id, url, title, img):
             return
 
         mangasIds.add(globalId)
-        sleep(2)
 
 
-def newNaver():
-    response = requests.get(NAVER, headers=headers)
+def newNaverComic():
+    response = requests.get(NAVER_COMIC, headers=headers)
     if response.status_code != 200:
         print("There was an error fetching new Kuaikanmanhua projects:", response.text)
         return
@@ -85,7 +84,7 @@ def newNaver():
         title = e["titleName"]
         img_src = e["thumbnailUrl"]
         publish(
-            "naver",
+            "naver-comics",
             id,
             f"https://comic.naver.com/webtoon/list?titleId=814362{id}",
             title,
@@ -93,8 +92,8 @@ def newNaver():
         )
 
 
-def newNaverComic():
-    response = requests.get(NAVER_COMICS, headers=headers)
+def newNaver():
+    response = requests.get(NAVER, headers=headers)
     if response.status_code != 200:
         print("There was an error fetching new Kuaikanmanhua projects:", response.text)
         return
@@ -116,7 +115,7 @@ def newNaverComic():
         img_src = e.select_one("img").attrs["src"]
 
         publish(
-            "naver-comics",
+            "naver",
             id,
             f"https://series.naver.com/comic/detail.series?productNo={id}",
             title,

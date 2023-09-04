@@ -31,6 +31,10 @@ domains = {
         fetchNaverProject,
         "https://ssl.pstatic.net/static/nstore/series_favicon_152.ico",
     ],
+    "naver-comics": [
+        fetchNaverProject,
+        "https://ssl.pstatic.net/static/comic/images/og_tag_v2.png",
+    ],
     "kuaikanmanhua": [
         fetchKuaikanmanhuaProject,
         "https://static3w.kuaikanmanhua.com/_nuxt/static-kkfront-pc/image/logo.f38006f.png",
