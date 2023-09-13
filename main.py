@@ -4,8 +4,10 @@ import os
 load_dotenv()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 assert WEBHOOK_URL
-WEBHOOK_TRAD = os.getenv("WEBHOOK_TRAD")
-assert WEBHOOK_TRAD
+WEBHOOK_TRAD_COMIC = os.getenv("WEBHOOK_TRAD_COMIC")
+assert WEBHOOK_TRAD_COMIC
+WEBHOOK_TRAD_NOVEL = os.getenv("WEBHOOK_TRAD_NOVEL")
+assert WEBHOOK_TRAD_NOVEL
 
 from multiprocessing import Process
 import requests
@@ -73,13 +75,16 @@ def post_chapter(domain, title, url, img, old_chapter, new_chapter):
 
 def post_chapter_trad(project: Project, title, img_src, old_cnt, new_cnt):
     for i in range(old_cnt + 1, new_cnt + 1):
+        ping = ""
+        if project.role:
+            ping = f"<@&{project.role}>"
         r = requests.post(
-            WEBHOOK_TRAD,
+            WEBHOOK_TRAD_COMIC if project.type == "comic" else WEBHOOK_TRAD_NOVEL,
             json={
                 "username": "Sorties Perf",
                 "avatar_url": "https://perf-scan.fr/icon.png",
                 "content": f"""
-<:nkmoney:967083636107145218>   @all @{project.role}
+<:nkmoney:967083636107145218> <@&1151571404546904104> {ping}
 🫧  CHAPITRE {i}
 <a:PinkFlame:1133669310875848804> {title}
 <a:bunwaking:761828350867800065> https://perf-scan.fr/series/martial-peak/chapitre-{i}
@@ -92,7 +97,7 @@ def post_chapter_trad(project: Project, title, img_src, old_cnt, new_cnt):
 def fetchProject(db, url):
     domain = re.match(DOMAIN_REGEX, url)[2]
 
-    print(domain + " -> ", end="", flush=True)
+    # print(domain + " -> ", end="", flush=True)
 
     try:
         domainData = domains[domain]
@@ -102,7 +107,10 @@ def fetchProject(db, url):
         else:
             return
     except Exception as e:
-        print(f"\033[31mErreur: impossible de verifier: \033[1m{url}\033[0m")
+        print(
+            domain + " -> ",
+            f"\033[31mErreur: impossible de verifier: \033[1m{url}\033[0m",
+        )
         raise e
 
     query = db.search(Query()["manga-id"] == id)
@@ -113,13 +121,17 @@ def fetchProject(db, url):
     if doc["cnt"] < cnt:
         new = cnt - doc["cnt"]
         print(
-            f"\033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m"
+            "[RAW]",
+            domain + " -> ",
+            f"\033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m",
         )
         post_chapter(domain, title, url, img_src, doc["cnt"], cnt)
         doc["cnt"] = cnt
     else:
         print(
-            f"\033[34;1;4m{title}\033[24m: \033[22;97m Aucun nouveau chapitre \033[0m"
+            "[RAW]",
+            domain + " -> ",
+            f"\033[34;1;4m{title}\033[24m: \033[22;97m Aucun nouveau chapitre \033[0m",
         )
 
     db.upsert(doc, Query()["manga-id"] == id)
@@ -133,9 +145,9 @@ def checkRaw():
         projects = reloadProjects()
         for i, project in enumerate(projects):
             if project.raw_url != "":
-                print("[RAW]: ", i + 1, "/", len(projects), end=" ", flush=True)
+                # print("[RAW]: ", i + 1, "/", len(projects), end=" ", flush=True)
                 fetchProject(db, project.raw_url)
-                sleep(60 * random.random())
+                sleep(60 * random.random() + 2)
         print("<< Finished checking raw updates")
         sleep(60 * random.random() * 60 + 20)
 
@@ -144,10 +156,10 @@ def checkTrad():
     db = TinyDB("db.json")
     while True:
         projects = reloadProjects()
+        print(">> [TRAD] Checking trad updates")
         for i, project in enumerate(projects):
-            print(">> [TRAD] Checking trad updates")
             if project.trad_url != "":
-                print("[TRAD]", i + 1, "/", len(projects), end=" ", flush=True)
+                # print("[TRAD]", i + 1, "/", len(projects), end=" ", flush=True)
                 [id, title, img_src, cnt] = fetchPerf(project.trad_url)
                 id = "perf-" + str(id)
 
@@ -159,19 +171,19 @@ def checkTrad():
                 if doc["cnt"] < cnt:
                     new = cnt - doc["cnt"]
                     print(
-                        f"\033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m"
+                        f"[TRAD] \033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m"
                     )
                     post_chapter_trad(project, title, img_src, doc["cnt"], cnt)
                     doc["cnt"] = cnt
                 else:
                     print(
-                        f"\033[34;1;4m{title}\033[24m: \033[22;97m Aucun nouveau chapitre \033[0m"
+                        f"[TRAD] \033[34;1;4m{title}\033[24m: \033[22;97m Aucun nouveau chapitre \033[0m"
                     )
 
                 db.upsert(doc, Query()["manga-id"] == id)
 
-                sleep(60 * random.random() * 5)
-            print(">> [TRAD] Done")
+        print(">> [TRAD] Done")
+        sleep(60 * random.random() * 5)
 
 
 def hourly():

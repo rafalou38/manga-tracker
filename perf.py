@@ -19,14 +19,14 @@ def fetchPerf(url):
     chapters = soup.select(".grid a")
     latest = 0
     for c in chapters:
-        n = int(re.search(r"(?<=chapitre-)\d+", c.attrs["href"])[0])
+        n = int(re.search(r"chapitre-?(\d+)", c.attrs["href"])[1])
         latest = max(latest, n)
 
     # cnt = re.search(r"\d+", cntLabel.text)[0]
     title = soup.find("h1").text
     img = "https://perf-scan.fr" + soup.select_one("img.w-full").attrs["src"]
 
-    slug = re.search(r"[a-z\-]+(?=\/?$)", url)[0]
+    slug = re.search(r"[a-z\-\d]+(?=\/?$)", url)[0]
 
     # chapters = soup.select("[role=\"tabpanel\"] a")
 
