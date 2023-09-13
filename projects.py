@@ -49,7 +49,7 @@ def reloadProjects():
         if type != "novel":
             type = "comic"
 
-        if role == "nan" or not re.match(r"^[\d\.]+$", role):
+        if role == "nan" or not re.match(r"^[\d\.e+]+$", role):
             role = ""
         else:
             role = int(float(role))
