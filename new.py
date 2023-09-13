@@ -46,7 +46,7 @@ def publish(domain, id, url, title, img):
     globalId = domain + "-" + str(id)
     if globalId not in mangasIds:
         print(
-            f"\033[34;1;4m{domain}\033[24m: \033[32m\033[22;32m nouveau manga: {title}\033[0m"
+            f"[NEW MANGAS] \033[34;1;4m{domain}\033[24m: \033[32m\033[22;32m nouveau manga: {title}\033[0m"
         )
 
         r = requests.post(
@@ -152,11 +152,12 @@ def newKKM():
 
 
 def checkWhatsNew():
-    print("checking for new projects")
+    print(">> Start checking for new projects")
     newNaver()
-    print("Naver OK")
+    print("[NEW MANGAS] Naver OK")
     newKKM()
-    print("KKM OK")
+    print("[NEW MANGAS] KKM OK")
     newNaverComic()
-    print("Naver comics OK")
+    print("[NEW MANGAS] Naver comics OK")
     save()
+    print(">> Finished checking for new projects")

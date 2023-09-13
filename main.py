@@ -4,19 +4,23 @@ import os
 load_dotenv()
 WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 assert WEBHOOK_URL
+WEBHOOK_TRAD = os.getenv("WEBHOOK_TRAD")
+assert WEBHOOK_TRAD
 
+from multiprocessing import Process
 import requests
 from pyquery import PyQuery as pq
 from tinydb import TinyDB, Query
 from time import sleep
 import random
-from projects import reloadProjects
 import re
 
+from projects import reloadProjects, Project
 from naver import fetchNaverProject
 from kakao import fetchKakaoProject
 from kuaikanmanhua import fetchKuaikanmanhuaProject
 from ridibooks import fetchRidibooksProject
+from perf import fetchPerf
 import new
 
 DOMAIN_REGEX = r"(https?:\/\/[\w.]*?)(\w+)(\.\w+\/)"
@@ -67,17 +71,36 @@ def post_chapter(domain, title, url, img, old_chapter, new_chapter):
     r.raise_for_status()
 
 
-def fetchProject(url):
-    fetchFn = lambda *_: print(
-        f"\033[31mErreur: url non supportée: \033[1m{url}\033[0m]"
-    )
+def post_chapter_trad(project: Project, title, img_src, old_cnt, new_cnt):
+    for i in range(old_cnt + 1, new_cnt + 1):
+        r = requests.post(
+            WEBHOOK_TRAD,
+            json={
+                "username": "Sorties Perf",
+                "avatar_url": "https://perf-scan.fr/icon.png",
+                "content": f"""
+<:nkmoney:967083636107145218>   @all @{project.role}
+🫧  CHAPITRE {i}
+<a:PinkFlame:1133669310875848804> {title}
+<a:bunwaking:761828350867800065> https://perf-scan.fr/series/martial-peak/chapitre-{i}
+""",
+            },
+        )
+    r.raise_for_status()
+
+
+def fetchProject(db, url):
     domain = re.match(DOMAIN_REGEX, url)[2]
 
     print(domain + " -> ", end="", flush=True)
 
     try:
-        [id, title, img_src, cnt] = domains[domain][0](url)
-        id = domain + "-" + str(id)
+        domainData = domains[domain]
+        if domainData:
+            [id, title, img_src, cnt] = domainData[0](url)
+            id = domain + "-" + str(id)
+        else:
+            return
     except Exception as e:
         print(f"\033[31mErreur: impossible de verifier: \033[1m{url}\033[0m")
         raise e
@@ -102,18 +125,71 @@ def fetchProject(url):
     db.upsert(doc, Query()["manga-id"] == id)
 
 
-if __name__ == "__main__":
+def checkRaw():
     db = TinyDB("db.json")
-    projects = []
+
+    while True:
+        print(">> Start checking raw updates")
+        projects = reloadProjects()
+        for i, project in enumerate(projects):
+            if project.raw_url != "":
+                print("[RAW]: ", i + 1, "/", len(projects), end=" ", flush=True)
+                fetchProject(db, project.raw_url)
+                sleep(60 * random.random())
+        print("<< Finished checking raw updates")
+        sleep(60 * random.random() * 60 + 20)
+
+
+def checkTrad():
+    db = TinyDB("db.json")
+    while True:
+        projects = reloadProjects()
+        for i, project in enumerate(projects):
+            print(">> [TRAD] Checking trad updates")
+            if project.trad_url != "":
+                print("[TRAD]", i + 1, "/", len(projects), end=" ", flush=True)
+                [id, title, img_src, cnt] = fetchPerf(project.trad_url)
+                id = "perf-" + str(id)
+
+                query = db.search(Query()["manga-id"] == id)
+                if query:
+                    doc = query[0]
+                else:
+                    doc = {"manga-id": id, "title": title, "cnt": cnt}
+                if doc["cnt"] < cnt:
+                    new = cnt - doc["cnt"]
+                    print(
+                        f"\033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m"
+                    )
+                    post_chapter_trad(project, title, img_src, doc["cnt"], cnt)
+                    doc["cnt"] = cnt
+                else:
+                    print(
+                        f"\033[34;1;4m{title}\033[24m: \033[22;97m Aucun nouveau chapitre \033[0m"
+                    )
+
+                db.upsert(doc, Query()["manga-id"] == id)
+
+                sleep(60 * random.random() * 5)
+            print(">> [TRAD] Done")
+
+
+def hourly():
     while True:
         new.checkWhatsNew()
+        sleep(60 * random.random() * 60)
 
-        projects = reloadProjects()
-        for i, url in enumerate(projects):
-            print(i + 1, "/", len(projects), end=" ", flush=True)
-            fetchProject(url)
-            sleep(60 * random.random() * 7 + 2)
 
-        break
+if __name__ == "__main__":
+    t_raw = Process(target=checkRaw)
+    t_raw.start()
+
+    t_hourly = Process(target=hourly)
+    t_hourly.start()
+
+    t_trad = Process(target=checkTrad)
+    t_trad.start()
+
+    t_trad.join()
 
 # print(fetchKuaikanmanhuaProject("https://www.kuaikanmanhua.com/web/topic/11045/"))

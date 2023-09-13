@@ -1,5 +1,6 @@
 from dotenv import load_dotenv
 import os
+from dataclasses import dataclass
 
 load_dotenv()
 SHEET_ID = os.getenv("SHEET_ID")
@@ -7,10 +8,17 @@ assert SHEET_ID
 
 import pandas as pd
 import requests
+import math
+
+
+@dataclass
+class Project:
+    raw_url: str
+    trad_url: str
+    role: int
 
 
 def reloadProjects():
-    global projects
     print("Rechargement des projets")
 
     r = requests.get(
@@ -18,6 +26,27 @@ def reloadProjects():
     )
     with open("sheet.csv", "wb") as f:
         f.write(r.content)
-    df = pd.read_csv("sheet.csv", header=2, usecols=[1, 2, 3])
+    df = pd.read_csv("sheet.csv", header=2, usecols=[1, 2, 3, 4, 5, 6])
     print(df)
-    return df.iloc[:, 2].to_numpy()
+
+    projects: list[Project] = []
+    for index, row in df.iterrows():
+        # project = {"raw": row.iloc[2], "trad": row.iloc[4], "role": round(row.iloc[5])}
+
+        raw = str(row.iloc[2])
+        trad = str(row.iloc[4])
+        role = str(row.iloc[5])
+        if raw == "nan":
+            raw = ""
+        if trad == "nan":
+            trad = ""
+        if role == "nan":
+            role = ""
+        else:
+            role = int(float(role))
+
+        p = Project(raw, trad, role)
+        # print(p)
+        projects.append(p)
+
+    return projects
