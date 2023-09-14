@@ -73,7 +73,7 @@ def post_chapter(domain, title, url, img, old_chapter, new_chapter):
     r.raise_for_status()
 
 
-def post_chapter_trad(project: Project, title, img_src, old_cnt, new_cnt):
+def post_chapter_trad(id: str, project: Project, title, img_src, old_cnt, new_cnt):
     for i in range(old_cnt + 1, new_cnt + 1):
         ping = ""
         if project.role:
@@ -87,7 +87,7 @@ def post_chapter_trad(project: Project, title, img_src, old_cnt, new_cnt):
 <:nkmoney:967083636107145218> <@&1151571404546904104> {ping}
 🫧  CHAPITRE {i}
 <a:PinkFlame:1133669310875848804> {title}
-<a:bunwaking:761828350867800065> https://perf-scan.fr/series/martial-peak/chapitre-{i}
+<a:bunwaking:761828350867800065> https://perf-scan.fr/series/{id.removeprefix("perf-")}/chapitre-{i}
 """,
             },
         )
@@ -173,7 +173,7 @@ def checkTrad():
                     print(
                         f"[TRAD] \033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m"
                     )
-                    post_chapter_trad(project, title, img_src, doc["cnt"], cnt)
+                    post_chapter_trad(id, project, title, img_src, doc["cnt"], cnt)
                     doc["cnt"] = cnt
                 else:
                     print(
@@ -181,6 +181,8 @@ def checkTrad():
                     )
 
                 db.upsert(doc, Query()["manga-id"] == id)
+
+                sleep(5 * random.random())
 
         print(">> [TRAD] Done")
         sleep(60 * random.random() * 5)
