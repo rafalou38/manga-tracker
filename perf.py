@@ -16,7 +16,7 @@ def fetchPerf(url):
     soup = BeautifulSoup(response.text, features="lxml")
 
     # cntLabel = soup.select_one("span.p-4:nth-child(2)")
-    chapters = soup.select(".grid a")
+    chapters = soup.select(".grid ul a")
     latest = 0
     for c in chapters:
         n = int(re.search(r"chapitre-?(\d+)", c.attrs["href"])[1])
