@@ -75,16 +75,19 @@ def post_chapter(domain, title, url, img, old_chapter, new_chapter):
 
 def post_chapter_trad(id: str, project: Project, title, img_src, old_cnt, new_cnt):
     for i in range(old_cnt + 1, new_cnt + 1):
-        ping = ""
+        ping1 = ""
+        ping2 = ""
+        if project.type == "comic":
+            ping1 = "<@&1151571404546904104>"
         if project.role:
-            ping = f"<@&{project.role}>"
+            ping2 = f"<@&{project.role}>"
         r = requests.post(
             WEBHOOK_TRAD_COMIC if project.type == "comic" else WEBHOOK_TRAD_NOVEL,
             json={
                 "username": "Sorties Perf",
                 "avatar_url": "https://perf-scan.fr/icon.png",
                 "content": f"""
-<:nkmoney:967083636107145218> <@&1151571404546904104> {ping}
+<:nkmoney:967083636107145218> {ping1} {ping2}
 🫧  CHAPITRE {i}
 <a:PinkFlame:1133669310875848804> {title}
 <a:bunwaking:761828350867800065> https://perf-scan.fr/series/{id.removeprefix("perf-")}/chapitre-{i}
