@@ -74,6 +74,7 @@ def post_chapter(domain, title, url, img, old_chapter, new_chapter):
 
 
 def post_chapter_trad(id: str, project: Project, title, img_src, old_cnt, new_cnt):
+    # if (new_cnt - old_cnt < 5)
     for i in range(old_cnt + 1, new_cnt + 1):
         ping1 = ""
         ping2 = ""
@@ -144,56 +145,65 @@ def checkRaw():
     db = TinyDB("db.json")
 
     while True:
-        print(">> Start checking raw updates")
-        projects = reloadProjects()
-        for i, project in enumerate(projects):
-            if project.raw_url != "":
-                # print("[RAW]: ", i + 1, "/", len(projects), end=" ", flush=True)
-                fetchProject(db, project.raw_url)
-                sleep(60 * random.random() + 2)
-        print("<< Finished checking raw updates")
+        try:
+            print(">> Start checking raw updates")
+            projects = reloadProjects()
+            for i, project in enumerate(projects):
+                if project.raw_url != "":
+                    # print("[RAW]: ", i + 1, "/", len(projects), end=" ", flush=True)
+                    fetchProject(db, project.raw_url)
+                    sleep(60 * random.random() + 2)
+            print("<< Finished checking raw updates")
+        except:
+            print("##\n##", "Failed to check raw", "\n##")
         sleep(60 * random.random() * 60 + 20)
 
 
 def checkTrad():
     db = TinyDB("db.json")
     while True:
-        projects = reloadProjects()
-        print(">> [TRAD] Checking trad updates")
-        for i, project in enumerate(projects):
-            if project.trad_url != "":
-                # print("[TRAD]", i + 1, "/", len(projects), end=" ", flush=True)
-                [id, title, img_src, cnt] = fetchPerf(project.trad_url)
-                id = "perf-" + str(id)
+        try:
+            projects = reloadProjects()
+            print(">> [TRAD] Checking trad updates")
+            for i, project in enumerate(projects):
+                if project.trad_url != "":
+                    # print("[TRAD]", i + 1, "/", len(projects), end=" ", flush=True)
+                    [id, title, img_src, cnt] = fetchPerf(project.trad_url)
+                    id = "perf-" + str(id)
 
-                query = db.search(Query()["manga-id"] == id)
-                if query:
-                    doc = query[0]
-                else:
-                    doc = {"manga-id": id, "title": title, "cnt": cnt}
-                if doc["cnt"] < cnt:
-                    new = cnt - doc["cnt"]
-                    print(
-                        f"[TRAD] \033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m"
-                    )
-                    post_chapter_trad(id, project, title, img_src, doc["cnt"], cnt)
-                    doc["cnt"] = cnt
-                else:
-                    print(
-                        f"[TRAD] \033[34;1;4m{title}\033[24m: \033[22;97m Aucun nouveau chapitre \033[0m"
-                    )
+                    query = db.search(Query()["manga-id"] == id)
+                    if query:
+                        doc = query[0]
+                    else:
+                        doc = {"manga-id": id, "title": title, "cnt": cnt}
+                    if doc["cnt"] < cnt:
+                        new = cnt - doc["cnt"]
+                        print(
+                            f"[TRAD] \033[34;1;4m{title}\033[24m: \033[32m{new}\033[22;32m nouveau chapitre{ 's' if new != 1 else '' } \033[0m"
+                        )
+                        post_chapter_trad(id, project, title, img_src, doc["cnt"], cnt)
+                        doc["cnt"] = cnt
+                    else:
+                        print(
+                            f"[TRAD] \033[34;1;4m{title}\033[24m: \033[22;97m Aucun nouveau chapitre \033[0m"
+                        )
 
-                db.upsert(doc, Query()["manga-id"] == id)
+                    db.upsert(doc, Query()["manga-id"] == id)
 
-                sleep(5 * random.random())
+                    sleep(5 * random.random())
 
-        print(">> [TRAD] Done")
+            print(">> [TRAD] Done")
+        except:
+            print("##\n##", "Failed to check trad", "\n##")
         sleep(60 * random.random() * 5)
 
 
 def hourly():
     while True:
-        new.checkWhatsNew()
+        try:
+            new.checkWhatsNew()
+        except:
+            print("##\n##", "Failed to check what's new", "\n##")
         sleep(60 * random.random() * 60)
 
 
