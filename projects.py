@@ -30,7 +30,7 @@ def reloadProjects():
     )
     with open("sheet.csv", "wb") as f:
         f.write(r.content)
-    df = pd.read_csv("sheet.csv", header=2, usecols=[1, 2, 3, 4, 5, 6, 7])
+    df = pd.read_csv("sheet.csv", header=2, usecols=[1, 2, 3, 4, 5, 6, 7], dtype=str)
     # print(df)
 
     projects: list[Project] = []
@@ -52,10 +52,14 @@ def reloadProjects():
         if role == "nan" or not re.match(r"^[\d\.e+]+$", role):
             role = ""
         else:
-            role = int(float(role))
+            role = int(role)
 
         p = Project(raw, trad, role, type)
         # print(p)
         projects.append(p)
 
     return projects
+
+
+if __name__ == "__main__":
+    reloadProjects()
