@@ -79,7 +79,7 @@ def post_chapter_trad(id: str, project: Project, title, img_src, old_cnt, new_cn
         ping1 = ""
         ping2 = ""
         if project.type == "comic":
-            ping1 = "<@&1151571404546904104>"
+            ping1 = "<@&690617860380164116>"
         if project.role:
             ping2 = f"<@&{project.role}>"
         r = requests.post(
